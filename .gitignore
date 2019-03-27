@@ -1,0 +1,5 @@
+__pycache__/
+build/
+work_diary.spec
+*.lnk
+*.ini
