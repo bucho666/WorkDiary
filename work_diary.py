@@ -3,9 +3,9 @@ import re
 import os
 import configparser
 from PyQt5 import sip
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QCalendarWidget, QLabel, QApplication, QPlainTextEdit, QSizePolicy, QMenu, QSystemTrayIcon, QAction, qApp)
-from PyQt5.QtCore import (Qt, QDate, QPointF, QRect, QEvent)
-from PyQt5.QtGui import (QFont, QTextCursor, QColor, QTextCharFormat, QPainter, QIcon)
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 class DiaryEdit(QPlainTextEdit):
   def __init__(self, parent):
@@ -34,8 +34,6 @@ class DiaryEdit(QPlainTextEdit):
   def keyPressEvent(self, e):
     if e.key() == Qt.Key_Return:
       self._autoIndent(e)
-    elif e.modifiers() & Qt.ControlModifier and e.key() == Qt.Key_S:
-      self.parentWidget().keyPressEvent(e)
     else:
       super().keyPressEvent(e)
     self.ensureCursorVisible()
@@ -158,12 +156,6 @@ class WorkDiary(QWidget):
     self._updateCalendar(None, None)
     self.show()
 
-  def keyPressEvent(self, e):
-    if e.modifiers() & Qt.ControlModifier and e.key() == Qt.Key_S:
-      self._calendar.setSelectedDate(QDate.currentDate())
-    else:
-      super().keyPressEvent(e)
-
   def closeEvent(self, e):
     self.hide()
     e.ignore()
@@ -207,10 +199,25 @@ class WorkDiary(QWidget):
   def _layout(self):
     hbox, vbox = QHBoxLayout(), QVBoxLayout()
     vbox.addWidget(self._calendar)
+    vbox.addLayout(self._make_buttons())
     vbox.addStretch()
     hbox.addLayout(vbox)
     hbox.addWidget(self._text)
     self.setLayout(hbox)
+
+  def _make_buttons(self):
+    style = self.style()
+    yesterday = QPushButton(style.standardIcon(QStyle.SP_MediaSeekBackward), "")
+    yesterday.clicked.connect(lambda e: self._calendar.setSelectedDate(self._calendar.selectedDate().addDays(-1)))
+    today = QPushButton(style.standardIcon(QStyle.SP_MediaStop), "")
+    today.clicked.connect(lambda e: self._calendar.setSelectedDate(QDate.currentDate()))
+    tomorrow =QPushButton(style.standardIcon(QStyle.SP_MediaSeekForward), "") 
+    tomorrow.clicked.connect(lambda e: self._calendar.setSelectedDate(self._calendar.selectedDate().addDays(1)))
+    layout = QHBoxLayout()
+    layout.addWidget(yesterday)
+    layout.addWidget(today)
+    layout.addWidget(tomorrow)
+    return layout
 
   def _changeDate(self):
     self._save_current_diary()
