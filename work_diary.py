@@ -12,6 +12,7 @@ class DiaryEdit(QPlainTextEdit):
     super().__init__(parent)
     self._lineNumber = QWidget(self)
     self._lineNumber.installEventFilter(self)
+    self.setCursorWidth(2)
     self.setFont("ＭＳ ゴシック", 9)
     self.setTabStopWidth(self.fontMetrics().width(' ') * 2)
     self.setViewportMargins(self.fontMetrics().width('9') * 4, 0, 0, 0)
