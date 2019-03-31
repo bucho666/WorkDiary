@@ -209,16 +209,20 @@ class WorkDiary(QWidget):
   def _make_buttons(self):
     style = self.style()
     yesterday = QPushButton(style.standardIcon(QStyle.SP_MediaSeekBackward), "")
-    yesterday.clicked.connect(lambda e: self._calendar.setSelectedDate(self._calendar.selectedDate().addDays(-1)))
+    yesterday.clicked.connect(lambda e: self._select_day(self._calendar.selectedDate().addDays(-1)))
     today = QPushButton(style.standardIcon(QStyle.SP_MediaStop), "")
-    today.clicked.connect(lambda e: self._calendar.setSelectedDate(QDate.currentDate()))
+    today.clicked.connect(lambda e: self._select_day(QDate.currentDate()))
     tomorrow =QPushButton(style.standardIcon(QStyle.SP_MediaSeekForward), "") 
-    tomorrow.clicked.connect(lambda e: self._calendar.setSelectedDate(self._calendar.selectedDate().addDays(1)))
+    tomorrow.clicked.connect(lambda e: self._select_day(self._calendar.selectedDate().addDays(1)))
     layout = QHBoxLayout()
     layout.addWidget(yesterday)
     layout.addWidget(today)
     layout.addWidget(tomorrow)
     return layout
+
+  def _select_day(self, day):
+    self._calendar.setSelectedDate(day)
+    self._text.setFocus()
 
   def _changeDate(self):
     self._save_current_diary()
