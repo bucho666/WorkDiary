@@ -146,10 +146,12 @@ class Config(object):
         return self
 
 class WorkDiary(QWidget):
+  WINDOW_TITLE = 'WorkDiary'
   def __init__(self):
     super().__init__()
-    self._icon = QIcon("WorkDiary.ico")
+    self._icon = QIcon("resouce\WorkDiary.ico")
     self._config = Config("WorkDiary.ini").load()
+    self._text_changed = False
     self._initWedgets()
     self._initTrayIcon()
     self._layout()
@@ -161,10 +163,14 @@ class WorkDiary(QWidget):
     self.hide()
     e.ignore()
 
+  def keyPressEvent(self, e):
+    if e.modifiers() | Qt.ControlModifier and e.key() == Qt.Key_S:
+      self._save_current_diary()
+
   def _initWedgets(self):
     self.setWindowIcon(self._icon)
     self.setGeometry(self._config.geometry())
-    self.setWindowTitle('WorkDiary')
+    self.setWindowTitle(self.WINDOW_TITLE)
     self._calendar = QCalendarWidget(self)
     self._calendar.setFixedSize(180, 180)
     self._calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
@@ -174,6 +180,7 @@ class WorkDiary(QWidget):
     self._calendar.currentPageChanged.connect(self._updateCalendar)
     self._current_date = self._calendar.selectedDate()
     self._text = DiaryEdit(self)
+    self._text.textChanged.connect(self._updateTitle)
     self._text.setFocus()
 
   def _initTrayIcon(self):
@@ -230,12 +237,24 @@ class WorkDiary(QWidget):
     self._load_current_diary()
     self._updateCalendar(None, None)
 
+  def _updateTitle(self):
+    if self._text_changed:
+      return
+    self._text_changed = True
+    self.setWindowTitle('%s (更新)' % self.WINDOW_TITLE)
+
   def _save_current_diary(self):
     current_diary = Diary(self._current_date)
     current_diary.save(self._text.toPlainText())
+    self._restWindowTitle()
 
   def _load_current_diary(self):
     self._text.setPlainText(Diary(self._current_date).load())
+    self._restWindowTitle()
+
+  def _restWindowTitle(self):
+    self._text_changed = False
+    self.setWindowTitle(self.WINDOW_TITLE)
 
   def _updateCalendar(self, year, month):
     if not year or not month:
